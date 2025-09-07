@@ -8,6 +8,13 @@ import {
   setDoc,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 // Your Firebase config
 const firebaseConfig = {
@@ -22,6 +29,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 const dataRef = doc(db, "shared", "todoData");
 
 // --- Local state ---
@@ -35,6 +44,8 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 
 // Ensure Firestore doc exists
 async function ensureDoc() {
@@ -170,28 +181,3 @@ function startRealtimeListener() {
       list = Array.isArray(data.list) ? data.list : [];
       historyList = Array.isArray(data.historyList) ? data.historyList : [];
     } else {
-      list = [];
-      historyList = [];
-    }
-    render();
-
-    if (isInitialLoad) {
-      inputEl.focus();
-      isInitialLoad = false;
-    }
-  });
-}
-
-// Wire up UI
-function wireUpUI() {
-  addBtn.addEventListener("click", addItem);
-  inputEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addItem();
-  });
-}
-
-// --- Boot without auth ---
-await ensureDoc();
-render();
-wireUpUI();
-startRealtimeListener();
