@@ -1,38 +1,109 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f8f8f8;
+:root {
+  --bg: #0f1220;
+  --panel: #151a2b;
+  --text: #e8ecf4;
+  --muted: #9aa3b2;
+  --accent: #5b8cff;
+  --green: #35c759;
+  --border: #1e2740;
+  --low: #6aa84f;
+  --mid: #f1c232;
+  --high: #e06666;
 }
 
-h1, h2 {
-  color: #333;
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-.input-section {
-  margin-bottom: 20px;
+.container {
+  max-width: 720px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+h1 { margin: 0 0 16px; font-size: 28px; }
+h2 { margin: 24px 0 12px; font-size: 18px; color: var(--muted); font-weight: 600; }
+
+.controls {
+  display: flex;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
 }
 
 input, select, button {
-  padding: 8px;
-  margin-right: 5px;
+  border: 1px solid var(--border);
+  background: #0e1427;
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 8px;
+  outline: none;
 }
 
-li {
-  padding: 8px;
-  margin: 5px 0;
-  background: white;
+input { flex: 1; }
+
+button {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.05s ease-in-out;
+}
+button:active { transform: translateY(1px); }
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list li {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  border-left: 5px solid gray;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 10px;
 }
 
-li.High { border-color: red; }
-li.Medium { border-color: orange; }
-li.Low { border-color: green; }
+.badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #0f1220;
+  font-weight: 700;
+}
+
+.low .badge { background: var(--low); }
+.mid .badge { background: var(--mid); }
+.high .badge { background: var(--high); }
+
+.item-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
 
 button.done {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
+  background: var(--green);
+}
+
+.history li {
+  opacity: 0.85;
 }
