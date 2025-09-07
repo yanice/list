@@ -232,37 +232,4 @@ async function clearHistory() {
 
 // Real-time listener
 function startRealtimeListener() {
-  onSnapshot(dataRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      list = Array.isArray(data.list) ? data.list : [];
-      historyList = Array.isArray(data.historyList) ? data.historyList : [];
-    } else {
-      list = [];
-      historyList = [];
-    }
-    render();
-
-    if (isInitialLoad) {
-      inputEl.focus();
-      isInitialLoad = false;
-    }
-  });
-}
-
-// Wire up UI
-function wireUpUI() {
-  addBtn.addEventListener("click", addItem);
-  inputEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addItem();
-  });
-  if (clearHistoryBtn) {
-    clearHistoryBtn.addEventListener("click", clearHistory);
-  }
-}
-
-// --- Boot ---
-await ensureDoc();
-render();
-wireUpUI();
-startRealtimeListener();
+  onSnapshot(dataRef, (
