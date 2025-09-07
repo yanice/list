@@ -26,6 +26,9 @@ const firebaseConfig = {
   appId: "1:998487684637:web:277e966a27f76270b638f4"
 };
 
+// Allowed emails (must match Firestore rules)
+const allowedEmails = ["yanicehuiyh@gmail.com", "kpioryboy@gmail.com"];
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -125,7 +128,12 @@ async function addItem() {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
     const newList = [...(data.list || []), { name, priority }];
-    tx.set(dataRef, { list: newList, historyList: data.historyList || [] });
+
+    // Always include both fields
+    tx.set(dataRef, {
+      list: newList,
+      historyList: data.historyList || []
+    });
   });
 
   inputEl.value = "";
@@ -144,7 +152,11 @@ async function markDone(index) {
     item.date = new Date().toLocaleString();
     const newHistory = [...(data.historyList || []), item];
 
-    tx.set(dataRef, { list: curList, historyList: newHistory });
+    // Always include both fields
+    tx.set(dataRef, {
+      list: curList,
+      historyList: newHistory
+    });
   });
 }
 
@@ -158,7 +170,12 @@ async function deleteItem(index) {
     if (index < 0 || index >= curList.length) return;
 
     curList.splice(index, 1);
-    tx.set(dataRef, { list: curList, historyList: data.historyList || [] });
+
+    // Always include both fields
+    tx.set(dataRef, {
+      list: curList,
+      historyList: data.historyList || []
+    });
   });
 }
 
@@ -194,6 +211,17 @@ function wireUpUI() {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log("Signed in as:", user.email);
+
+    // Enable Add button only if email is allowed
+    if (allowedEmails.includes(user.email)) {
+      addBtn.disabled = false;
+      inputEl.disabled = false;
+    } else {
+      addBtn.disabled = true;
+      inputEl.disabled = true;
+      alert("You are signed in but not authorized to modify the list.");
+    }
+
     await ensureDoc();
     render();
     wireUpUI();
@@ -201,6 +229,8 @@ onAuthStateChanged(auth, async (user) => {
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
   } else {
+    addBtn.disabled = true;
+    inputEl.disabled = true;
     loginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
   }
