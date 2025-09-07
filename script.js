@@ -1,37 +1,5 @@
-// IMPORTANT: Replace these with your Firebase project config from the Firebase Console.
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
-    authDomain: "list-55b07.firebaseapp.com",
-    projectId: "list-55b07",
-    storageBucket: "list-55b07.firebasestorage.app",
-    messagingSenderId: "998487684637",
-    appId: "1:998487684637:web:277e966a27f76270b638f4"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
-
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID"
-};
-
-/*
-  Real-time collaborative list using Firestore.
-  - All users share a single document: collection "shared", doc "todoData".
-  - Fields: list (array), historyList (array)
-*/
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+// --- Firebase imports & setup ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
   getFirestore,
   doc,
@@ -39,26 +7,36 @@ import {
   onSnapshot,
   setDoc,
   runTransaction
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Firebase init
+// Your Firebase config from the Firebase Console
+const firebaseConfig = {
+  apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
+  authDomain: "list-55b07.firebaseapp.com",
+  projectId: "list-55b07",
+  storageBucket: "list-55b07.firebasestorage.app",
+  messagingSenderId: "998487684637",
+  appId: "1:998487684637:web:277e966a27f76270b638f4"
+};
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const dataRef = doc(db, "shared", "todoData");
 
-// Local state
+// --- Local state ---
 let list = [];
 let historyList = [];
 let isInitialLoad = true;
 
-// DOM
+// --- DOM elements ---
 const listEl = document.getElementById("list");
 const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
 
-// Ensure the document exists on first load
+// Ensure Firestore doc exists
 async function ensureDoc() {
   const snap = await getDoc(dataRef);
   if (!snap.exists()) {
@@ -68,7 +46,6 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
-  // To-do list
   listEl.innerHTML = "";
   list.forEach((item, index) => {
     const li = document.createElement("li");
@@ -98,7 +75,6 @@ function render() {
     listEl.appendChild(li);
   });
 
-  // History
   historyEl.innerHTML = "";
   historyList.forEach((item) => {
     const li = document.createElement("li");
@@ -126,12 +102,10 @@ async function addItem() {
   const priority = priorityEl.value || "low";
   if (!name) return;
 
-  // Use transaction to avoid overwriting concurrent changes
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
-    const newList = [...(data.list || [])];
-    newList.push({ name, priority });
+    const newList = [...(data.list || []), { name, priority }];
     tx.set(dataRef, { list: newList, historyList: data.historyList || [] });
   });
 
@@ -167,7 +141,6 @@ onSnapshot(dataRef, (docSnap) => {
   }
   render();
 
-  // On first load, keep input focused
   if (isInitialLoad) {
     inputEl.focus();
     isInitialLoad = false;
@@ -184,10 +157,6 @@ inputEl.addEventListener("keydown", (e) => {
 await ensureDoc();
 render();
 
-// Expose for inline use if you decide to keep inline handlers in HTML
+// Expose for inline HTML handlers if needed
 window.addItem = addItem;
 window.markDone = markDone;
-
-
-
-
