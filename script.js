@@ -12,7 +12,8 @@ import {
   getAuth,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 // Your Firebase config
@@ -43,6 +44,8 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 
 // Ensure Firestore doc exists
 async function ensureDoc() {
@@ -195,16 +198,23 @@ onAuthStateChanged(auth, async (user) => {
     render();
     wireUpUI();
     startRealtimeListener();
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
   } else {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("Signed in as:", result.user.email);
-      await ensureDoc();
-      render();
-      wireUpUI();
-      startRealtimeListener();
-    } catch (error) {
-      console.error("Sign-in error:", error);
-    }
+    loginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
   }
+});
+
+// Manual login/logout
+loginBtn.addEventListener("click", async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("Sign-in error:", error);
+  }
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
 });
