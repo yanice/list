@@ -9,12 +9,12 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Your Firebase config from the Firebase Console
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
   authDomain: "list-55b07.firebaseapp.com",
   projectId: "list-55b07",
-  storageBucket: "list-55b07.firebasestorage.app",
+  storageBucket: "list-55b07.appspot.com",
   messagingSenderId: "998487684637",
   appId: "1:998487684637:web:277e966a27f76270b638f4"
 };
@@ -63,12 +63,20 @@ function render() {
 
     const actions = document.createElement("div");
     actions.className = "actions";
+
     const doneBtn = document.createElement("button");
     doneBtn.className = "done";
     doneBtn.title = "Mark done";
     doneBtn.textContent = "✔";
     doneBtn.addEventListener("click", () => markDone(index));
     actions.appendChild(doneBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete";
+    deleteBtn.title = "Delete item";
+    deleteBtn.textContent = "×";
+    deleteBtn.addEventListener("click", () => deleteItem(index));
+    actions.appendChild(deleteBtn);
 
     li.appendChild(left);
     li.appendChild(actions);
@@ -129,6 +137,20 @@ async function markDone(index) {
   });
 }
 
+// Delete item
+async function deleteItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const curList = [...(data.list || [])];
+    if (index < 0 || index >= curList.length) return;
+
+    curList.splice(index, 1);
+    tx.set(dataRef, { list: curList, historyList: data.historyList || [] });
+  });
+}
+
 // Real-time listener
 onSnapshot(dataRef, (docSnap) => {
   if (docSnap.exists()) {
@@ -156,7 +178,3 @@ inputEl.addEventListener("keydown", (e) => {
 // Boot
 await ensureDoc();
 render();
-
-// Expose for inline HTML handlers if needed
-window.addItem = addItem;
-window.markDone = markDone;
