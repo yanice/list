@@ -9,7 +9,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Your Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
   authDomain: "list-55b07.firebaseapp.com",
@@ -38,9 +38,9 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
-const clearHistoryBtn = document.getElementById("clearHistoryBtn"); // optional button in HTML
+const clearHistoryBtn = document.getElementById("clearHistoryBtn"); // optional
 
-// Ensure Firestore doc exists with correct shape
+// Ensure Firestore doc exists
 async function ensureDoc() {
   const snap = await getDoc(dataRef);
   if (!snap.exists()) {
@@ -48,21 +48,23 @@ async function ensureDoc() {
   }
 }
 
+// Patch IDs for old items
+function patchIds(arr) {
+  return arr.map(item => ({
+    id: item.id || crypto.randomUUID(),
+    ...item
+  }));
+}
+
 // Render UI
 function render() {
-  // Sort active list by priority
-  list.sort((a, b) => {
-    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
-  });
+  // Sort lists by priority
+  list.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+  historyList.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
-  // Sort history list by priority
-  historyList.sort((a, b) => {
-    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
-  });
-
-  // --- Render active list ---
+  // Active list
   listEl.innerHTML = "";
-  list.forEach((item) => {
+  list.forEach(item => {
     const li = document.createElement("li");
     li.className = item.priority || "low";
 
@@ -98,9 +100,9 @@ function render() {
     listEl.appendChild(li);
   });
 
-  // --- Render history list ---
+  // History list
   historyEl.innerHTML = "";
-  historyList.forEach((item) => {
+  historyList.forEach(item => {
     const li = document.createElement("li");
     li.className = item.priority || "low";
 
@@ -138,7 +140,7 @@ async function addItem() {
   if (!name) return;
 
   const newItem = {
-    id: Date.now().toString(), // unique ID
+    id: crypto.randomUUID(),
     name,
     priority
   };
@@ -146,10 +148,8 @@ async function addItem() {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
-
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     curList.push(newItem);
-
     tx.set(dataRef, {
       list: curList,
       historyList: Array.isArray(data.historyList) ? data.historyList : []
@@ -165,37 +165,27 @@ async function markDone(id) {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
-
     const idx = curList.findIndex(item => item.id === id);
     if (idx === -1) return;
-
     const item = curList.splice(idx, 1)[0];
     item.date = new Date().toLocaleString();
     curHistory.push(item);
-
-    tx.set(dataRef, {
-      list: curList,
-      historyList: curHistory
-    });
+    tx.set(dataRef, { list: curList, historyList: curHistory });
   });
 }
 
-// Delete item from active list by ID
+// Delete active item by ID
 async function deleteItem(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     const idx = curList.findIndex(item => item.id === id);
     if (idx === -1) return;
-
     curList.splice(idx, 1);
-
     tx.set(dataRef, {
       list: curList,
       historyList: Array.isArray(data.historyList) ? data.historyList : []
@@ -203,53 +193,11 @@ async function deleteItem(id) {
   });
 }
 
-// Delete single history item by ID
+// Delete history item by ID
 async function deleteHistoryItem(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-
     const curList = Array.isArray(data.list) ? data.list : [];
-    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
-
-    const idx = curHistory.findIndex(item => item.id === id);
-    if (idx === -1) return;
-
-    curHistory.splice(idx, 1);
-
-    tx.set(dataRef, {
-      list: curList,
-      historyList: curHistory
-    });
-  });
-}
-
-// Clear all history
-async function clearHistory() {
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(dataRef);
-    if (!snap.exists()) return;
-    const data = snap.data();
-
-    tx.set(dataRef, {
-      list: Array.isArray(data.list) ? data.list : [],
-      historyList: []
-    });
-  });
-}
-
-// Real-time listener
-function startRealtimeListener() {
-  onSnapshot(dataRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      list = Array.isArray(data.list) ? data.list : [];
-      historyList = Array.isArray(data.historyList) ? data.historyList : [];
-    } else {
-      list = [];
-      historyList = [];
-    }
-    render();
-
-    if (isInitialLoad) {
+    const curHistory = Array.isArray(data.historyList) ? [...data
