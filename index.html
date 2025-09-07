@@ -3,29 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shared To‑Do List</title>
+  <title>Interactive List</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Shared To‑Do List</h1>
-
-  <div class="input-row">
-    <input id="itemInput" type="text" placeholder="Enter a task..." />
-    <select id="prioritySelect">
-      <option value="low">Low</option>
-      <option value="medium">Medium</option>
-      <option value="high">High</option>
-    </select>
-    <button id="addBtn">Add</button>
+  <div class="container">
+    <h1>My List</h1>
+    <div class="input-group">
+      <input type="text" id="itemInput" placeholder="Add a new item..." />
+      <button id="addBtn">Add</button>
+    </div>
+    <ul id="list"></ul>
   </div>
-
-  <h2>Active List</h2>
-  <ul id="list"></ul>
-
-  <h2>History</h2>
-  <ul id="history"></ul>
-  <button id="clearHistoryBtn">Clear History</button>
-
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

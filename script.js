@@ -27,7 +27,6 @@ const dataRef = doc(db, "shared", "todoData");
 // --- Local state ---
 let list = [];
 let historyList = [];
-let isInitialLoad = true;
 
 // Priority order mapping
 const priorityOrder = { high: 1, medium: 2, low: 3 };
@@ -78,7 +77,6 @@ function render() {
     doneBtn.className = "done";
     doneBtn.textContent = "✔";
     doneBtn.title = "Mark done";
-    doneBtn.textContent = "✔";
     doneBtn.addEventListener("click", () => markDone(index));
     actions.appendChild(doneBtn);
 
@@ -117,7 +115,6 @@ function render() {
     deleteBtn.className = "delete";
     deleteBtn.textContent = "×";
     deleteBtn.title = "Remove from history";
-    deleteBtn.textContent = "×";
     deleteBtn.addEventListener("click", () => deleteHistoryItem(index));
     actions.appendChild(deleteBtn);
 
@@ -132,8 +129,6 @@ async function addItem() {
   const name = inputEl.value.trim();
   const priority = priorityEl.value || "low";
   if (!name) return;
-
-  const newItem = { id: Date.now().toString(), name, priority };
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -228,4 +223,23 @@ async function clearHistory() {
 
 // Real-time listener
 function startRealtimeListener() {
-  onSnapshot(dataRef, (
+  onSnapshot(dataRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      list = Array.isArray(data.list) ? data.list : [];
+      historyList = Array.isArray(data.historyList) ? data.historyList : [];
+      render();
+    }
+  });
+}
+
+// --- Init ---
+await ensureDoc();
+startRealtimeListener();
+
+// --- Event listeners ---
+addBtn.addEventListener("click", addItem);
+inputEl.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addItem();
+});
+clearHistoryBtn.addEventListener("click", clearHistory);
