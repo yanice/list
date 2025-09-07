@@ -50,17 +50,17 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
-  // Sort active list
+  // Sort active list by priority
   list.sort((a, b) => {
     return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
   });
 
-  // Sort history list
+  // Sort history list by priority
   historyList.sort((a, b) => {
     return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
   });
 
-  // To-do list
+  // --- Render active list ---
   listEl.innerHTML = "";
   list.forEach((item, index) => {
     const li = document.createElement("li");
@@ -98,7 +98,7 @@ function render() {
     listEl.appendChild(li);
   });
 
-  // History list
+  // --- Render history list ---
   historyEl.innerHTML = "";
   historyList.forEach((item, index) => {
     const li = document.createElement("li");
