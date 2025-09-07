@@ -8,6 +8,12 @@ import {
   setDoc,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 // Your Firebase config
 const firebaseConfig = {
@@ -22,6 +28,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 const dataRef = doc(db, "shared", "todoData");
 
 // --- Local state ---
@@ -152,22 +160,24 @@ async function deleteItem(index) {
 }
 
 // Real-time listener
-onSnapshot(dataRef, (docSnap) => {
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    list = Array.isArray(data.list) ? data.list : [];
-    historyList = Array.isArray(data.historyList) ? data.historyList : [];
-  } else {
-    list = [];
-    historyList = [];
-  }
-  render();
+function startRealtimeListener() {
+  onSnapshot(dataRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      list = Array.isArray(data.list) ? data.list : [];
+      historyList = Array.isArray(data.historyList) ? data.historyList : [];
+    } else {
+      list = [];
+      historyList = [];
+    }
+    render();
 
-  if (isInitialLoad) {
-    inputEl.focus();
-    isInitialLoad = false;
-  }
-});
+    if (isInitialLoad) {
+      inputEl.focus();
+      isInitialLoad = false;
+    }
+  });
+}
 
 // Wire up UI
 addBtn.addEventListener("click", addItem);
@@ -175,6 +185,22 @@ inputEl.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addItem();
 });
 
-// Boot
-await ensureDoc();
-render();
+// --- Auth flow ---
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    console.log("Signed in as:", user.email);
+    await ensureDoc();
+    render();
+    startRealtimeListener();
+  } else {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log("Signed in as:", result.user.email);
+      await ensureDoc();
+      render();
+      startRealtimeListener();
+    } catch (error) {
+      console.error("Sign-in error:", error);
+    }
+  }
+});
