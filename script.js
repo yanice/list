@@ -180,10 +180,12 @@ function startRealtimeListener() {
 }
 
 // Wire up UI
-addBtn.addEventListener("click", addItem);
-inputEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") addItem();
-});
+function wireUpUI() {
+  addBtn.addEventListener("click", addItem);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+}
 
 // --- Auth flow ---
 onAuthStateChanged(auth, async (user) => {
@@ -191,6 +193,7 @@ onAuthStateChanged(auth, async (user) => {
     console.log("Signed in as:", user.email);
     await ensureDoc();
     render();
+    wireUpUI();
     startRealtimeListener();
   } else {
     try {
@@ -198,6 +201,7 @@ onAuthStateChanged(auth, async (user) => {
       console.log("Signed in as:", result.user.email);
       await ensureDoc();
       render();
+      wireUpUI();
       startRealtimeListener();
     } catch (error) {
       console.error("Sign-in error:", error);
