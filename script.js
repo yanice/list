@@ -106,7 +106,7 @@ function render() {
   });
 }
 
-// Add item
+// Add item (safe for multi-user)
 async function addItem() {
   const name = inputEl.value.trim();
   const priority = priorityEl.value || "low";
@@ -115,26 +115,26 @@ async function addItem() {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
-    const curList = Array.isArray(data.list) ? data.list : [];
-    const curHistory = Array.isArray(data.historyList) ? data.historyList : [];
 
-    const newList = [...curList, { name, priority }];
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    curList.push({ name, priority });
 
     tx.set(dataRef, {
-      list: newList,
-      historyList: curHistory
+      list: curList,
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
     });
   });
 
   inputEl.value = "";
 }
 
-// Mark as done
+// Mark as done (safe for multi-user)
 async function markDone(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
+
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
 
@@ -142,31 +142,30 @@ async function markDone(index) {
 
     const item = curList.splice(index, 1)[0];
     item.date = new Date().toLocaleString();
-    const newHistory = [...curHistory, item];
+    curHistory.push(item);
 
     tx.set(dataRef, {
       list: curList,
-      historyList: newHistory
+      historyList: curHistory
     });
   });
 }
 
-// Delete item
+// Delete item (safe for multi-user)
 async function deleteItem(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-    const curList = Array.isArray(data.list) ? [...data.list] : [];
-    const curHistory = Array.isArray(data.historyList) ? data.historyList : [];
 
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
     if (index < 0 || index >= curList.length) return;
 
     curList.splice(index, 1);
 
     tx.set(dataRef, {
       list: curList,
-      historyList: curHistory
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
     });
   });
 }
