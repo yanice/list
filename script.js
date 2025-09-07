@@ -38,7 +38,7 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
-const clearHistoryBtn = document.getElementById("clearHistoryBtn"); // optional button in HTML
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 
 // Ensure Firestore doc exists with correct shape
 async function ensureDoc() {
@@ -51,14 +51,10 @@ async function ensureDoc() {
 // Render UI
 function render() {
   // Sort active list by priority
-  list.sort((a, b) => {
-    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
-  });
+  list.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
   // Sort history list by priority
-  historyList.sort((a, b) => {
-    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
-  });
+  historyList.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
   // --- Render active list ---
   listEl.innerHTML = "";
@@ -138,7 +134,7 @@ async function addItem() {
   if (!name) return;
 
   const newItem = {
-    id: Date.now().toString(), // unique ID
+    id: Date.now().toString(),
     name,
     priority
   };
@@ -159,7 +155,7 @@ async function addItem() {
   inputEl.value = "";
 }
 
-// Mark as done by ID
+// Mark as done
 async function markDone(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -183,7 +179,7 @@ async function markDone(id) {
   });
 }
 
-// Delete item from active list by ID
+// Delete active item
 async function deleteItem(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -203,7 +199,7 @@ async function deleteItem(id) {
   });
 }
 
-// Delete single history item by ID
+// Delete history item
 async function deleteHistoryItem(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -253,3 +249,20 @@ function startRealtimeListener() {
     render();
 
     if (isInitialLoad) {
+      isInitialLoad = false;
+      console.log("Initial data loaded");
+    }
+  });
+}
+
+// --- Startup ---
+ensureDoc().then(() => {
+  startRealtimeListener();
+});
+
+// --- Event listeners ---
+addBtn.addEventListener("click", addItem);
+clearHistoryBtn.addEventListener("click", clearHistory);
+inputEl.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addItem();
+});
