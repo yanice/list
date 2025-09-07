@@ -35,6 +35,7 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn"); // optional button in HTML
 
 // Ensure Firestore doc exists with correct shape
 async function ensureDoc() {
@@ -86,7 +87,7 @@ function render() {
 
   // History list
   historyEl.innerHTML = "";
-  historyList.forEach((item) => {
+  historyList.forEach((item, index) => {
     const li = document.createElement("li");
     li.className = item.priority || "low";
 
@@ -101,12 +102,23 @@ function render() {
     left.appendChild(badge);
     left.appendChild(name);
 
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete";
+    deleteBtn.title = "Remove from history";
+    deleteBtn.textContent = "×";
+    deleteBtn.addEventListener("click", () => deleteHistoryItem(index));
+    actions.appendChild(deleteBtn);
+
     li.appendChild(left);
+    li.appendChild(actions);
     historyEl.appendChild(li);
   });
 }
 
-// Add item (safe for multi-user)
+// Add item
 async function addItem() {
   const name = inputEl.value.trim();
   const priority = priorityEl.value || "low";
@@ -128,7 +140,7 @@ async function addItem() {
   inputEl.value = "";
 }
 
-// Mark as done (safe for multi-user)
+// Mark as done
 async function markDone(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -151,7 +163,7 @@ async function markDone(index) {
   });
 }
 
-// Delete item (safe for multi-user)
+// Delete item from active list
 async function deleteItem(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -166,6 +178,41 @@ async function deleteItem(index) {
     tx.set(dataRef, {
       list: curList,
       historyList: Array.isArray(data.historyList) ? data.historyList : []
+    });
+  });
+}
+
+// Delete single history item
+async function deleteHistoryItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+
+    const curList = Array.isArray(data.list) ? data.list : [];
+    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
+
+    if (index < 0 || index >= curHistory.length) return;
+
+    curHistory.splice(index, 1);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: curHistory
+    });
+  });
+}
+
+// Clear all history
+async function clearHistory() {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+
+    tx.set(dataRef, {
+      list: Array.isArray(data.list) ? data.list : [],
+      historyList: []
     });
   });
 }
@@ -196,6 +243,9 @@ function wireUpUI() {
   inputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter") addItem();
   });
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", clearHistory);
+  }
 }
 
 // --- Boot ---
