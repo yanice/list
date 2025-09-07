@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🛒 Shopping List</h1>
+
+  <div class="input-section">
+    <input type="text" id="itemInput" placeholder="Add item...">
+    <select id="prioritySelect">
+      <option value="High">High</option>
+      <option value="Medium">Medium</option>
+      <option value="Low">Low</option>
+    </select>
+    <button onclick="addItem()">Add</button>
+  </div>
+
+  <h2>Current List</h2>
+  <ul id="list"></ul>
+
+  <h2>History</h2>
+  <ul id="history"></ul>
+
+  <script src="script.js"></script>
+</body>
+</html>
