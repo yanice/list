@@ -40,7 +40,7 @@ const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 
-// Ensure Firestore doc exists with correct shape
+// Ensure Firestore doc exists
 async function ensureDoc() {
   const snap = await getDoc(dataRef);
   if (!snap.exists()) {
@@ -50,13 +50,12 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
-  // Sort active list by priority
+  // Sort active list
   list.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
-
-  // Sort history list by priority
+  // Sort history list
   historyList.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
-  // --- Render active list ---
+  // Active list
   listEl.innerHTML = "";
   list.forEach((item) => {
     const li = document.createElement("li");
@@ -77,15 +76,15 @@ function render() {
 
     const doneBtn = document.createElement("button");
     doneBtn.className = "done";
-    doneBtn.title = "Mark done";
     doneBtn.textContent = "✔";
+    doneBtn.title = "Mark done";
     doneBtn.addEventListener("click", () => markDone(item.id));
     actions.appendChild(doneBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete";
-    deleteBtn.title = "Delete item";
     deleteBtn.textContent = "×";
+    deleteBtn.title = "Delete";
     deleteBtn.addEventListener("click", () => deleteItem(item.id));
     actions.appendChild(deleteBtn);
 
@@ -94,7 +93,7 @@ function render() {
     listEl.appendChild(li);
   });
 
-  // --- Render history list ---
+  // History list
   historyEl.innerHTML = "";
   historyList.forEach((item) => {
     const li = document.createElement("li");
@@ -116,8 +115,8 @@ function render() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete";
-    deleteBtn.title = "Remove from history";
     deleteBtn.textContent = "×";
+    deleteBtn.title = "Remove from history";
     deleteBtn.addEventListener("click", () => deleteHistoryItem(item.id));
     actions.appendChild(deleteBtn);
 
@@ -133,19 +132,13 @@ async function addItem() {
   const priority = priorityEl.value || "low";
   if (!name) return;
 
-  const newItem = {
-    id: Date.now().toString(),
-    name,
-    priority
-  };
+  const newItem = { id: Date.now().toString(), name, priority };
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
-
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     curList.push(newItem);
-
     tx.set(dataRef, {
       list: curList,
       historyList: Array.isArray(data.historyList) ? data.historyList : []
@@ -155,114 +148,16 @@ async function addItem() {
   inputEl.value = "";
 }
 
-// Mark as done
+// Mark done
 async function markDone(id) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
-
     const idx = curList.findIndex(item => item.id === id);
     if (idx === -1) return;
-
     const item = curList.splice(idx, 1)[0];
     item.date = new Date().toLocaleString();
-    curHistory.push(item);
-
-    tx.set(dataRef, {
-      list: curList,
-      historyList: curHistory
-    });
-  });
-}
-
-// Delete active item
-async function deleteItem(id) {
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(dataRef);
-    if (!snap.exists()) return;
-    const data = snap.data();
-
-    const curList = Array.isArray(data.list) ? [...data.list] : [];
-    const idx = curList.findIndex(item => item.id === id);
-    if (idx === -1) return;
-
-    curList.splice(idx, 1);
-
-    tx.set(dataRef, {
-      list: curList,
-      historyList: Array.isArray(data.historyList) ? data.historyList : []
-    });
-  });
-}
-
-// Delete history item
-async function deleteHistoryItem(id) {
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(dataRef);
-    if (!snap.exists()) return;
-    const data = snap.data();
-
-    const curList = Array.isArray(data.list) ? data.list : [];
-    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
-
-    const idx = curHistory.findIndex(item => item.id === id);
-    if (idx === -1) return;
-
-    curHistory.splice(idx, 1);
-
-    tx.set(dataRef, {
-      list: curList,
-      historyList: curHistory
-    });
-  });
-}
-
-// Clear all history
-async function clearHistory() {
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(dataRef);
-    if (!snap.exists()) return;
-    const data = snap.data();
-
-    tx.set(dataRef, {
-      list: Array.isArray(data.list) ? data.list : [],
-      historyList: []
-    });
-  });
-}
-
-// Real-time listener
-function startRealtimeListener() {
-  onSnapshot(dataRef, (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      list = Array.isArray(data.list) ? data.list : [];
-      historyList = Array.isArray(data.historyList) ? data.historyList : [];
-    } else {
-      list = [];
-      historyList = [];
-    }
-    render();
-
-    if (isInitialLoad) {
-      isInitialLoad = false;
-      console.log("Initial data loaded");
-    }
-  });
-}
-
-// --- Startup ---
-ensureDoc().then(() => {
-  startRealtimeListener();
-});
-
-// --- Event listeners ---
-addBtn.addEventListener("click", addItem);
-clearHistoryBtn.addEventListener("click", clearHistory);
-inputEl.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") addItem();
-});
+    cur
