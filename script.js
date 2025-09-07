@@ -57,7 +57,7 @@ function render() {
 
   // Active list
   listEl.innerHTML = "";
-  list.forEach((item) => {
+  list.forEach((item, index) => {
     const li = document.createElement("li");
     li.className = item.priority || "low";
 
@@ -78,14 +78,14 @@ function render() {
     doneBtn.className = "done";
     doneBtn.textContent = "✔";
     doneBtn.title = "Mark done";
-    doneBtn.addEventListener("click", () => markDone(item.id));
+    doneBtn.textContent = "✔";
+    doneBtn.addEventListener("click", () => markDone(index));
     actions.appendChild(doneBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete";
     deleteBtn.textContent = "×";
-    deleteBtn.title = "Delete";
-    deleteBtn.addEventListener("click", () => deleteItem(item.id));
+    deleteBtn.addEventListener("click", () => deleteItem(index));
     actions.appendChild(deleteBtn);
 
     li.appendChild(left);
@@ -95,7 +95,7 @@ function render() {
 
   // History list
   historyEl.innerHTML = "";
-  historyList.forEach((item) => {
+  historyList.forEach((item, index) => {
     const li = document.createElement("li");
     li.className = item.priority || "low";
 
@@ -117,7 +117,8 @@ function render() {
     deleteBtn.className = "delete";
     deleteBtn.textContent = "×";
     deleteBtn.title = "Remove from history";
-    deleteBtn.addEventListener("click", () => deleteHistoryItem(item.id));
+    deleteBtn.textContent = "×";
+    deleteBtn.addEventListener("click", () => deleteHistoryItem(index));
     actions.appendChild(deleteBtn);
 
     li.appendChild(left);
@@ -138,7 +139,8 @@ async function addItem() {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
     const curList = Array.isArray(data.list) ? [...data.list] : [];
-    curList.push(newItem);
+    curList.push({ name, priority });
+
     tx.set(dataRef, {
       list: curList,
       historyList: Array.isArray(data.historyList) ? data.historyList : []
@@ -148,16 +150,82 @@ async function addItem() {
   inputEl.value = "";
 }
 
-// Mark done
-async function markDone(id) {
+// Mark as done
+async function markDone(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
     const curList = Array.isArray(data.list) ? [...data.list] : [];
     const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
-    const idx = curList.findIndex(item => item.id === id);
-    if (idx === -1) return;
-    const item = curList.splice(idx, 1)[0];
+
+    if (index < 0 || index >= curList.length) return;
+
+    const item = curList.splice(index, 1)[0];
     item.date = new Date().toLocaleString();
-    cur
+    curHistory.push(item);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: curHistory
+    });
+  });
+}
+
+// Delete item from active list
+async function deleteItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    if (index < 0 || index >= curList.length) return;
+
+    curList.splice(index, 1);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
+    });
+  });
+}
+
+// Delete single history item
+async function deleteHistoryItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+
+    const curList = Array.isArray(data.list) ? data.list : [];
+    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
+
+    if (index < 0 || index >= curHistory.length) return;
+
+    curHistory.splice(index, 1);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: curHistory
+    });
+  });
+}
+
+// Clear all history
+async function clearHistory() {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+    const data = snap.data();
+
+    tx.set(dataRef, {
+      list: Array.isArray(data.list) ? data.list : [],
+      historyList: []
+    });
+  });
+}
+
+// Real-time listener
+function startRealtimeListener() {
+  onSnapshot(dataRef, (
