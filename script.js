@@ -1,4 +1,24 @@
 // IMPORTANT: Replace these with your Firebase project config from the Firebase Console.
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
+    authDomain: "list-55b07.firebaseapp.com",
+    projectId: "list-55b07",
+    storageBucket: "list-55b07.firebasestorage.app",
+    messagingSenderId: "998487684637",
+    appId: "1:998487684637:web:277e966a27f76270b638f4"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
+
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -167,3 +187,7 @@ render();
 // Expose for inline use if you decide to keep inline handlers in HTML
 window.addItem = addItem;
 window.markDone = markDone;
+
+
+
+
