@@ -1,4 +1,3 @@
-// --- Firebase imports & setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
   getFirestore,
@@ -8,15 +7,7 @@ import {
   setDoc,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
   authDomain: "list-55b07.firebaseapp.com",
@@ -26,28 +17,20 @@ const firebaseConfig = {
   appId: "1:998487684637:web:277e966a27f76270b638f4"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 const dataRef = doc(db, "shared", "todoData");
 
-// --- Local state ---
 let list = [];
 let historyList = [];
 let isInitialLoad = true;
 
-// --- DOM elements ---
 const listEl = document.getElementById("list");
 const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
 
-// Ensure Firestore doc exists
 async function ensureDoc() {
   const snap = await getDoc(dataRef);
   if (!snap.exists()) {
@@ -55,7 +38,6 @@ async function ensureDoc() {
   }
 }
 
-// Render UI
 function render() {
   listEl.innerHTML = "";
   list.forEach((item, index) => {
@@ -115,7 +97,6 @@ function render() {
   });
 }
 
-// Add item
 async function addItem() {
   const name = inputEl.value.trim();
   const priority = priorityEl.value || "low";
@@ -135,7 +116,6 @@ async function addItem() {
   inputEl.value = "";
 }
 
-// Mark as done
 async function markDone(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -155,7 +135,6 @@ async function markDone(index) {
   });
 }
 
-// Delete item
 async function deleteItem(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
@@ -173,7 +152,6 @@ async function deleteItem(index) {
   });
 }
 
-// Real-time listener
 function startRealtimeListener() {
   onSnapshot(dataRef, (docSnap) => {
     if (docSnap.exists()) {
@@ -181,3 +159,26 @@ function startRealtimeListener() {
       list = Array.isArray(data.list) ? data.list : [];
       historyList = Array.isArray(data.historyList) ? data.historyList : [];
     } else {
+      list = [];
+      historyList = [];
+    }
+    render();
+
+    if (isInitialLoad) {
+      inputEl.focus();
+      isInitialLoad = false;
+    }
+  });
+}
+
+function wireUpUI() {
+  addBtn.addEventListener("click", addItem);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+}
+
+await ensureDoc();
+render();
+wireUpUI();
+startRealtimeListener();
