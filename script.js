@@ -8,13 +8,6 @@ import {
   setDoc,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 // Your Firebase config
 const firebaseConfig = {
@@ -26,18 +19,9 @@ const firebaseConfig = {
   appId: "1:998487684637:web:277e966a27f76270b638f4"
 };
 
-// Allowed emails (must match Firestore rules)
-const allowedEmails = ["yanicehuiyh@gmail.com", "kpioryboy@gmail.com"];
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-
-// Configure Google provider to always show account chooser
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
-
 const dataRef = doc(db, "shared", "todoData");
 
 // --- Local state ---
@@ -51,8 +35,6 @@ const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
 
 // Ensure Firestore doc exists
 async function ensureDoc() {
@@ -208,45 +190,8 @@ function wireUpUI() {
   });
 }
 
-// --- Auth flow ---
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log("Signed in as:", user.email);
-
-    if (allowedEmails.includes(user.email)) {
-      addBtn.disabled = false;
-      inputEl.disabled = false;
-    } else {
-      addBtn.disabled = true;
-      inputEl.disabled = true;
-      alert("You are signed in but not authorized to modify the list.");
-    }
-
-    await ensureDoc();
-    render();
-    wireUpUI();
-    startRealtimeListener();
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-  } else {
-    addBtn.disabled = true;
-    inputEl.disabled = true;
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-  }
-});
-
-// Manual login/logout
-loginBtn.addEventListener("click", async () => {
-  try {
-    await signOut(auth); // ensure fresh login
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    console.error("Sign-in error:", error);
-  }
-});
-
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-});
-
+// --- Boot without auth ---
+await ensureDoc();
+render();
+wireUpUI();
+startRealtimeListener();
