@@ -1,3 +1,4 @@
+// --- Firebase imports & setup ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
   getFirestore,
@@ -8,6 +9,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
   authDomain: "list-55b07.firebaseapp.com",
@@ -17,20 +19,24 @@ const firebaseConfig = {
   appId: "1:998487684637:web:277e966a27f76270b638f4"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const dataRef = doc(db, "shared", "todoData");
 
+// --- Local state ---
 let list = [];
 let historyList = [];
 let isInitialLoad = true;
 
+// --- DOM elements ---
 const listEl = document.getElementById("list");
 const historyEl = document.getElementById("history");
 const inputEl = document.getElementById("itemInput");
 const priorityEl = document.getElementById("prioritySelect");
 const addBtn = document.getElementById("addBtn");
 
+// Ensure Firestore doc exists with correct shape
 async function ensureDoc() {
   const snap = await getDoc(dataRef);
   if (!snap.exists()) {
@@ -38,7 +44,9 @@ async function ensureDoc() {
   }
 }
 
+// Render UI
 function render() {
+  // To-do list
   listEl.innerHTML = "";
   list.forEach((item, index) => {
     const li = document.createElement("li");
@@ -76,6 +84,7 @@ function render() {
     listEl.appendChild(li);
   });
 
+  // History list
   historyEl.innerHTML = "";
   historyList.forEach((item) => {
     const li = document.createElement("li");
@@ -97,6 +106,7 @@ function render() {
   });
 }
 
+// Add item
 async function addItem() {
   const name = inputEl.value.trim();
   const priority = priorityEl.value || "low";
@@ -105,28 +115,34 @@ async function addItem() {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
-    const newList = [...(data.list || []), { name, priority }];
+    const curList = Array.isArray(data.list) ? data.list : [];
+    const curHistory = Array.isArray(data.historyList) ? data.historyList : [];
+
+    const newList = [...curList, { name, priority }];
 
     tx.set(dataRef, {
       list: newList,
-      historyList: data.historyList || []
+      historyList: curHistory
     });
   });
 
   inputEl.value = "";
 }
 
+// Mark as done
 async function markDone(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-    const curList = [...(data.list || [])];
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
+
     if (index < 0 || index >= curList.length) return;
 
     const item = curList.splice(index, 1)[0];
     item.date = new Date().toLocaleString();
-    const newHistory = [...(data.historyList || []), item];
+    const newHistory = [...curHistory, item];
 
     tx.set(dataRef, {
       list: curList,
@@ -135,23 +151,27 @@ async function markDone(index) {
   });
 }
 
+// Delete item
 async function deleteItem(index) {
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     if (!snap.exists()) return;
     const data = snap.data();
-    const curList = [...(data.list || [])];
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    const curHistory = Array.isArray(data.historyList) ? data.historyList : [];
+
     if (index < 0 || index >= curList.length) return;
 
     curList.splice(index, 1);
 
     tx.set(dataRef, {
       list: curList,
-      historyList: data.historyList || []
+      historyList: curHistory
     });
   });
 }
 
+// Real-time listener
 function startRealtimeListener() {
   onSnapshot(dataRef, (docSnap) => {
     if (docSnap.exists()) {
@@ -171,6 +191,7 @@ function startRealtimeListener() {
   });
 }
 
+// Wire up UI
 function wireUpUI() {
   addBtn.addEventListener("click", addItem);
   inputEl.addEventListener("keydown", (e) => {
@@ -178,6 +199,7 @@ function wireUpUI() {
   });
 }
 
+// --- Boot ---
 await ensureDoc();
 render();
 wireUpUI();
