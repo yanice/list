@@ -33,6 +33,31 @@
 
   <!-- Load app logic as a module -->
   <script type="module" src="script.js"></script>
+<!-- Firebase SDKs -->
+<script type="module">
+  // Import the modular SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, deleteDoc, doc,
+    onSnapshot, serverTimestamp, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // TODO: replace with your app's config from Firebase Console
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
+    authDomain: "list-55b07.firebaseapp.com",
+    projectId: "list-55b07",
+  };
+
+  // Initialize
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Expose db to your script.js
+  window.db = db;
+  window.firestoreExports = { collection, addDoc, deleteDoc, doc, onSnapshot, serverTimestamp, query, orderBy };
+</script>
+<script src="script.js" type="module"></script>
 
 </body>
 </html>
