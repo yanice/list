@@ -46,3 +46,21 @@ function markDone(index) {
 }
 
 render();
+
+// Initialize Firebase
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, onSnapshot, setDoc } from "firebase/firestore";
+
+const firebaseConfig = { /* your config */ };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Listen for changes
+onSnapshot(doc(db, "shared", "document"), (docSnap) => {
+  document.getElementById("editor").value = docSnap.data().text;
+});
+
+// Save changes
+document.getElementById("editor").addEventListener("input", (e) => {
+  setDoc(doc(db, "shared", "document"), { text: e.target.value });
+});
