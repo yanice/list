@@ -1,109 +1,64 @@
-:root {
-  --bg: #0f1220;
-  --panel: #151a2b;
-  --text: #e8ecf4;
-  --muted: #9aa3b2;
-  --accent: #5b8cff;
-  --green: #35c759;
-  --border: #1e2740;
-  --low: #6aa84f;
-  --mid: #f1c232;
-  --high: #e06666;
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
 }
 
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-}
-
-.container {
-  max-width: 720px;
-  margin: 32px auto;
-  padding: 0 16px;
-}
-
-h1 { margin: 0 0 16px; font-size: 28px; }
-h2 { margin: 24px 0 12px; font-size: 18px; color: var(--muted); font-weight: 600; }
-
-.controls {
+.input-row {
   display: flex;
-  gap: 8px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: 10px;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 input, select, button {
-  border: 1px solid var(--border);
-  background: #0e1427;
-  color: var(--text);
-  padding: 10px 12px;
-  border-radius: 8px;
-  outline: none;
+  padding: 8px;
+  font-size: 14px;
 }
 
-input { flex: 1; }
-
-button {
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  transition: transform 0.05s ease-in-out;
-}
-button:active { transform: translateY(1px); }
-
-.list {
+ul {
   list-style: none;
   padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 8px;
 }
 
-.list li {
+li {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 10px 12px;
-  border-radius: 10px;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  color: #fff;
 }
 
-.badge {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  color: #0f1220;
-  font-weight: 700;
-}
-
-.low .badge { background: var(--low); }
-.mid .badge { background: var(--mid); }
-.high .badge { background: var(--high); }
+li.low { background-color: #4caf50; }
+li.medium { background-color: #ff9800; }
+li.high { background-color: #f44336; }
 
 .item-name {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.actions {
-  display: flex;
   gap: 8px;
 }
 
-button.done {
-  background: var(--green);
+.badge {
+  background: rgba(255,255,255,0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
 }
 
-.history li {
-  opacity: 0.85;
+.actions button {
+  margin-left: 5px;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.actions .done {
+  background-color: #2196f3;
+  color: white;
+}
+
+.actions .delete {
+  background-color: #9e9e9e;
+  color: white;
 }
