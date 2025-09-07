@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f8f8f8;
+}
+
+h1, h2 {
+  color: #333;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+input, select, button {
+  padding: 8px;
+  margin-right: 5px;
+}
+
+li {
+  padding: 8px;
+  margin: 5px 0;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  border-left: 5px solid gray;
+}
+
+li.High { border-color: red; }
+li.Medium { border-color: orange; }
+li.Low { border-color: green; }
+
+button.done {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
