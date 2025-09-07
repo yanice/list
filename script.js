@@ -33,7 +33,11 @@ const allowedEmails = ["yanicehuiyh@gmail.com", "kpioryboy@gmail.com"];
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Configure Google provider to always show account chooser
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
 const dataRef = doc(db, "shared", "todoData");
 
 // --- Local state ---
@@ -129,7 +133,6 @@ async function addItem() {
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
     const newList = [...(data.list || []), { name, priority }];
 
-    // Always include both fields
     tx.set(dataRef, {
       list: newList,
       historyList: data.historyList || []
@@ -152,7 +155,6 @@ async function markDone(index) {
     item.date = new Date().toLocaleString();
     const newHistory = [...(data.historyList || []), item];
 
-    // Always include both fields
     tx.set(dataRef, {
       list: curList,
       historyList: newHistory
@@ -171,7 +173,6 @@ async function deleteItem(index) {
 
     curList.splice(index, 1);
 
-    // Always include both fields
     tx.set(dataRef, {
       list: curList,
       historyList: data.historyList || []
@@ -212,7 +213,6 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log("Signed in as:", user.email);
 
-    // Enable Add button only if email is allowed
     if (allowedEmails.includes(user.email)) {
       addBtn.disabled = false;
       inputEl.disabled = false;
@@ -239,6 +239,7 @@ onAuthStateChanged(auth, async (user) => {
 // Manual login/logout
 loginBtn.addEventListener("click", async () => {
   try {
+    await signOut(auth); // ensure fresh login
     await signInWithPopup(auth, provider);
   } catch (error) {
     console.error("Sign-in error:", error);
@@ -248,3 +249,4 @@ loginBtn.addEventListener("click", async () => {
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
 });
+
