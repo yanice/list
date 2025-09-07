@@ -29,6 +29,9 @@ let list = [];
 let historyList = [];
 let isInitialLoad = true;
 
+// Priority order mapping
+const priorityOrder = { high: 1, medium: 2, low: 3 };
+
 // --- DOM elements ---
 const listEl = document.getElementById("list");
 const historyEl = document.getElementById("history");
@@ -47,6 +50,16 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
+  // Sort active list
+  list.sort((a, b) => {
+    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
+  });
+
+  // Sort history list
+  historyList.sort((a, b) => {
+    return (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
+  });
+
   // To-do list
   listEl.innerHTML = "";
   list.forEach((item, index) => {
