@@ -9,12 +9,25 @@
 <body>
   <div class="container">
     <h1>My List</h1>
+
     <div class="input-group">
       <input type="text" id="itemInput" placeholder="Add a new item..." />
+      <select id="prioritySelect">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
       <button id="addBtn">Add</button>
     </div>
+
+    <h2>Active Items</h2>
     <ul id="list"></ul>
+
+    <h2>History</h2>
+    <ul id="history"></ul>
+    <button id="clearHistoryBtn">Clear History</button>
   </div>
-  <script src="script.js"></script>
+
+  <script type="module" src="script.js"></script>
 </body>
 </html>

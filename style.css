@@ -12,12 +12,12 @@ body {
   padding: 20px 25px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  width: 350px;
+  width: 400px;
 }
 
-h1 {
+h1, h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .input-group {
@@ -25,15 +25,18 @@ h1 {
   gap: 10px;
 }
 
-input {
-  flex: 1;
+input, select {
   padding: 10px;
   border: 2px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
 }
 
-input:focus {
+input {
+  flex: 1;
+}
+
+input:focus, select:focus {
   border-color: #0078d4;
   outline: none;
 }
@@ -55,7 +58,7 @@ button:hover {
 ul {
   list-style: none;
   padding: 0;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 li {
@@ -68,12 +71,42 @@ li {
   align-items: center;
 }
 
-li button {
-  background: #e81123;
-  padding: 5px 10px;
+li.low { border-left: 5px solid #6c757d; }
+li.medium { border-left: 5px solid #ffc107; }
+li.high { border-left: 5px solid #dc3545; }
+
+.badge {
+  font-size: 10px;
+  background: #ccc;
+  color: #333;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.actions button {
+  margin-left: 5px;
+  padding: 5px 8px;
   font-size: 12px;
 }
 
-li button:hover {
+.actions button.delete {
+  background: #e81123;
+}
+.actions button.delete:hover {
   background: #c50f1f;
+}
+
+.actions button.done {
+  background: #28a745;
+}
+.actions button.done:hover {
+  background: #218838;
+}
+
+.actions button.edit {
+  background: #ffb900;
+}
+.actions button.edit:hover {
+  background: #e0a800;
 }
