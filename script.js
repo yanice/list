@@ -114,7 +114,11 @@ async function addItem() {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
     const newList = [...(data.list || []), { name, priority }];
-    tx.set(dataRef, { list: newList, historyList: data.historyList || [] });
+
+    tx.set(dataRef, {
+      list: newList,
+      historyList: data.historyList || []
+    });
   });
 
   inputEl.value = "";
@@ -133,7 +137,10 @@ async function markDone(index) {
     item.date = new Date().toLocaleString();
     const newHistory = [...(data.historyList || []), item];
 
-    tx.set(dataRef, { list: curList, historyList: newHistory });
+    tx.set(dataRef, {
+      list: curList,
+      historyList: newHistory
+    });
   });
 }
 
@@ -147,34 +154,44 @@ async function deleteItem(index) {
     if (index < 0 || index >= curList.length) return;
 
     curList.splice(index, 1);
-    tx.set(dataRef, { list: curList, historyList: data.historyList || [] });
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: data.historyList || []
+    });
   });
 }
 
 // Real-time listener
-onSnapshot(dataRef, (docSnap) => {
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    list = Array.isArray(data.list) ? data.list : [];
-    historyList = Array.isArray(data.historyList) ? data.historyList : [];
-  } else {
-    list = [];
-    historyList = [];
-  }
-  render();
+function startRealtimeListener() {
+  onSnapshot(dataRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      list = Array.isArray(data.list) ? data.list : [];
+      historyList = Array.isArray(data.historyList) ? data.historyList : [];
+    } else {
+      list = [];
+      historyList = [];
+    }
+    render();
 
-  if (isInitialLoad) {
-    inputEl.focus();
-    isInitialLoad = false;
-  }
-});
+    if (isInitialLoad) {
+      inputEl.focus();
+      isInitialLoad = false;
+    }
+  });
+}
 
 // Wire up UI
-addBtn.addEventListener("click", addItem);
-inputEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") addItem();
-});
+function wireUpUI() {
+  addBtn.addEventListener("click", addItem);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+}
 
-// Boot
+// --- Boot without auth ---
 await ensureDoc();
 render();
+wireUpUI();
+startRealtimeListener();
