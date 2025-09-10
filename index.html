@@ -3,32 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Interactive List</title>
+  <title>Shared List</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>My List</h1>
+  <main class="container">
+    <h1>Shared list</h1>
 
-    <div class="input-group">
-      <input type="text" id="itemInput" placeholder="Add a new item..." />
-      <select id="prioritySelect">
+    <section class="controls">
+      <input id="itemInput" type="text" placeholder="Add an item..." />
+      <select id="prioritySelect" aria-label="Priority">
         <option value="low">Low</option>
-        <option value="medium">Medium</option>
+        <option value="mid">Medium</option>
         <option value="high">High</option>
       </select>
       <button id="addBtn">Add</button>
-    </div>
+    </section>
 
-    <h2>Active Items</h2>
-    <ul id="list"></ul>
+    <section>
+      <h2>To do</h2>
+      <ul id="list" class="list"></ul>
+    </section>
 
-    <h2>History</h2>
-    <ul id="history"></ul>
-    <button id="clearHistoryBtn">Clear History</button>
-  </div>
+    <section>
+      <h2>History</h2>
+      <ul id="history" class="list history"></ul>
+    </section>
+  </main>
 
-  <!-- Important: type="module" is required for Firebase imports -->
+  <!-- Load app logic as a module -->
   <script type="module" src="script.js"></script>
 </body>
 </html>

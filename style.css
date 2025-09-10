@@ -1,112 +1,38 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f4f6f8;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 50px;
-}
-
-.container {
-  background: white;
-  padding: 20px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  width: 400px;
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #f8f8f8;
 }
 
 h1, h2 {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.input-group {
-  display: flex;
-  gap: 10px;
-}
-
-input, select {
-  padding: 10px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-input {
-  flex: 1;
-}
-
-input:focus, select:focus {
-  border-color: #0078d4;
-  outline: none;
-}
-
-button {
-  background: #0078d4;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-button:hover {
-  background: #005ea2;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 10px;
-}
-
-li {
-  background: #f9f9f9;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-li.low { border-left: 5px solid #6c757d; }
-li.medium { border-left: 5px solid #ffc107; }
-li.high { border-left: 5px solid #dc3545; }
-
-.badge {
-  font-size: 10px;
-  background: #ccc;
   color: #333;
-  padding: 2px 5px;
-  border-radius: 4px;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+input, select, button {
+  padding: 8px;
   margin-right: 5px;
 }
 
-.actions button {
-  margin-left: 5px;
-  padding: 5px 8px;
-  font-size: 12px;
+li {
+  padding: 8px;
+  margin: 5px 0;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  border-left: 5px solid gray;
 }
 
-.actions button.delete {
-  background: #e81123;
-}
-.actions button.delete:hover {
-  background: #c50f1f;
-}
+li.High { border-color: red; }
+li.Medium { border-color: orange; }
+li.Low { border-color: green; }
 
-.actions button.done {
-  background: #28a745;
-}
-.actions button.done:hover {
-  background: #218838;
-}
-
-.actions button.edit {
-  background: #ffb900;
-}
-.actions button.edit:hover {
-  background: #e0a800;
+button.done {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
