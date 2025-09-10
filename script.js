@@ -11,7 +11,7 @@ import {
 
 // Your Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
+  apiKey: "YOUR_API_KEY",
   authDomain: "list-55b07.firebaseapp.com",
   projectId: "list-55b07",
   storageBucket: "list-55b07.appspot.com",
@@ -49,9 +49,7 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
-  // Sort active list
   list.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
-  // Sort history list
   historyList.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
   // Active list
@@ -61,7 +59,6 @@ function render() {
     li.className = item.priority || "low";
 
     const left = document.createElement("div");
-    left.className = "item-name";
     const badge = document.createElement("span");
     badge.className = "badge";
     badge.textContent = (item.priority || "low").toUpperCase();
@@ -106,7 +103,6 @@ function render() {
     li.className = item.priority || "low";
 
     const left = document.createElement("div");
-    left.className = "item-name";
     const badge = document.createElement("span");
     badge.className = "badge";
     badge.textContent = (item.priority || "low").toUpperCase();
@@ -140,4 +136,6 @@ async function addItem() {
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
-    const data = snap.exists() ? snap.data() :
+    const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    curList.push({ name, priority
