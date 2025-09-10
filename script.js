@@ -9,9 +9,9 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Your Firebase config
+// Your Firebase config (using your original values)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyDnKtU3vXAijLIYT4Rn92tGrYn4-xBfnRo",
   authDomain: "list-55b07.firebaseapp.com",
   projectId: "list-55b07",
   storageBucket: "list-55b07.appspot.com",
@@ -30,6 +30,7 @@ let historyList = [];
 
 // Priority order mapping
 const priorityOrder = { high: 1, medium: 2, low: 3 };
+const allowedPriorities = new Set(["low", "medium", "high"]);
 
 // --- DOM elements ---
 const listEl = document.getElementById("list");
@@ -49,7 +50,9 @@ async function ensureDoc() {
 
 // Render UI
 function render() {
+  // Sort active list
   list.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
+  // Sort history list
   historyList.sort((a, b) => (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4));
 
   // Active list
@@ -59,6 +62,7 @@ function render() {
     li.className = item.priority || "low";
 
     const left = document.createElement("div");
+    left.className = "item-name";
     const badge = document.createElement("span");
     badge.className = "badge";
     badge.textContent = (item.priority || "low").toUpperCase();
@@ -103,6 +107,7 @@ function render() {
     li.className = item.priority || "low";
 
     const left = document.createElement("div");
+    left.className = "item-name";
     const badge = document.createElement("span");
     badge.className = "badge";
     badge.textContent = (item.priority || "low").toUpperCase();
@@ -131,11 +136,166 @@ function render() {
 // Add item
 async function addItem() {
   const name = inputEl.value.trim();
-  const priority = priorityEl.value || "low";
+  const priority = (priorityEl?.value || "low").toLowerCase();
   if (!name) return;
+
+  const p = allowedPriorities.has(priority) ? priority : "low";
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(dataRef);
     const data = snap.exists() ? snap.data() : { list: [], historyList: [] };
     const curList = Array.isArray(data.list) ? [...data.list] : [];
-    curList.push({ name, priority
+    curList.push({ name, priority: p });
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
+    });
+  });
+
+  inputEl.value = "";
+}
+
+// Edit item (name and/or priority)
+async function editItem(index) {
+  const current = list[index];
+  if (!current) return;
+
+  const newName = prompt("Edit item name:", current.name);
+  if (newName === null) return; // user cancelled
+
+  const newPriorityInput = prompt(
+    "Edit priority (low, medium, high):",
+    current.priority || "low"
+  );
+  if (newPriorityInput === null) return; // user cancelled
+
+  const newPriority = (newPriorityInput || "").toLowerCase();
+  const p = allowedPriorities.has(newPriority) ? newPriority : (current.priority || "low");
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+
+    if (index < 0 || index >= curList.length) return;
+
+    curList[index] = {
+      ...curList[index],
+      name: newName.trim() || curList[index].name,
+      priority: p
+    };
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
+    });
+  });
+}
+
+// Mark as done (move from active list to history)
+async function markDone(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
+
+    if (index < 0 || index >= curList.length) return;
+
+    const item = curList.splice(index, 1)[0];
+    item.date = new Date().toLocaleString();
+    curHistory.push(item);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: curHistory
+    });
+  });
+}
+
+// Delete item from active list
+async function deleteItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const curList = Array.isArray(data.list) ? [...data.list] : [];
+
+    if (index < 0 || index >= curList.length) return;
+
+    curList.splice(index, 1);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: Array.isArray(data.historyList) ? data.historyList : []
+    });
+  });
+}
+
+// Delete single history item
+async function deleteHistoryItem(index) {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const curList = Array.isArray(data.list) ? data.list : [];
+    const curHistory = Array.isArray(data.historyList) ? [...data.historyList] : [];
+
+    if (index < 0 || index >= curHistory.length) return;
+
+    curHistory.splice(index, 1);
+
+    tx.set(dataRef, {
+      list: curList,
+      historyList: curHistory
+    });
+  });
+}
+
+// Clear all history
+async function clearHistory() {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(dataRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    tx.set(dataRef, {
+      list: Array.isArray(data.list) ? data.list : [],
+      historyList: []
+    });
+  });
+}
+
+// Real-time listener
+function startRealtimeListener() {
+  onSnapshot(dataRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      list = Array.isArray(data.list) ? data.list : [];
+      historyList = Array.isArray(data.historyList) ? data.historyList : [];
+      render();
+    }
+  });
+}
+
+// --- Init & event bindings ---
+async function init() {
+  await ensureDoc();
+  startRealtimeListener();
+
+  addBtn.addEventListener("click", addItem);
+  inputEl.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+  clearHistoryBtn.addEventListener("click", clearHistory);
+}
+
+init();
